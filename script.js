@@ -502,7 +502,7 @@ function closeProjectModal() {
 
 document.querySelector('#new-project-button').addEventListener('click', openProjectModal);
 document.querySelector('#projects-new-button').addEventListener('click', openProjectModal);
-document.querySelector('#empty-project-button').addEventListener('click', openProjectModal);
+document.querySelector('#empty-project-button')?.addEventListener('click', openProjectModal);
 document.querySelector('#quick-review-button').addEventListener('click', () => showView('review'));
 document.querySelector('#history-review-button').addEventListener('click', () => showView('review'));
 document.querySelector('#close-modal').addEventListener('click', closeProjectModal);
