@@ -117,6 +117,11 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    return {"name": "CodeLens API", "status": "ok", "docs": "/docs", "health": "/api/health"}
+
+
 def build_local_review(code: str, language: str, instructions: str) -> str:
     """Provide a simple, reliable review when the external AI service is unavailable."""
     summary = f"This {language} code is short, readable, and shows a clear goal."
