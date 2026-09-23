@@ -592,9 +592,14 @@ async function submitAuth(event) {
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.detail || 'Authentication failed.');
+      const detail = Array.isArray(data.detail)
+        ? data.detail.map((item) => item.msg || item.detail || JSON.stringify(item)).join('; ')
+        : typeof data.detail === 'object'
+          ? data.detail.message || JSON.stringify(data.detail)
+          : data.detail;
+      throw new Error(detail || 'Authentication failed.');
     }
 
     resetGuestState();
