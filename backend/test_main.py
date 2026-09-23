@@ -99,6 +99,16 @@ def test_generate_test_cases_for_function():
     assert "find_max" in payload["tests"]
 
 
+def test_generate_tests_does_not_fabricate_function_for_script():
+    response = client.post(
+        "/api/generate-tests",
+        json={"code": "a = 5\nb = 3\nprint(a, b)", "language": "python"},
+    )
+
+    assert response.status_code == 200
+    assert "No function definition" in response.json()["tests"]
+
+
 def test_explain_code_endpoint():
     response = client.post(
         "/api/explain-code",

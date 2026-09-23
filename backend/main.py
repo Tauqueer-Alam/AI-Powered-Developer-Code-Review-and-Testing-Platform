@@ -409,11 +409,11 @@ def get_current_user(authorization: str | None = Header(default=None, alias="Aut
 def build_local_test_cases(code: str, language: str) -> str:
     """Generate simple, beginner-friendly unit tests based on a function snippet."""
     stripped = code.strip()
-    function_name = "sample_function"
-    if "def " in stripped:
-        match = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", stripped)
-        if match:
-            function_name = match.group(1)
+    match = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", stripped)
+    if not match:
+        return "No function definition was found. Test generation currently supports callable Python functions; add a `def function_name(...):` block before generating unit tests."
+
+    function_name = match.group(1)
 
     if "factorial" in function_name.lower() or "factorial" in code.lower():
         tests = [
@@ -593,8 +593,10 @@ def bug_verification(request: BugVerificationRequest):
 
 
 def build_static_analysis(code: str, language: str) -> tuple[str, str]:
-    summary = f"Static analysis for this {language} snippet shows a readable function structure with a few checks worth tightening."
-    analysis = "Static analysis: the code is structurally sound, but the function could benefit from clearer validation, simpler branches, and stronger edge-case handling."
+    has_function = bool(re.search(r"\b(?:async\s+)?def\s+[A-Za-z_][A-Za-z0-9_]*\s*\(", code))
+    code_type = "function" if has_function else "script"
+    summary = f"Static analysis for this {language} {code_type} shows readable structure with a few checks worth tightening."
+    analysis = "Static analysis: the code is structurally sound, but it could benefit from clearer validation, simpler branches, and stronger edge-case handling."
 
     if "for " in code and "if " in code:
         analysis = "Static analysis: this code contains iteration and a conditional branch. The logic is straightforward, but a guard for empty or malformed input would make it more robust."
@@ -613,11 +615,12 @@ def static_analysis(request: StaticAnalysisRequest):
 
 def build_complexity_analysis(code: str, language: str) -> str:
     lowered = code.lower()
+    subject = "function" if re.search(r"\b(?:async\s+)?def\s+[a-z_]", lowered) else "script"
     if "for " in lowered and "for " in lowered.lower().split("for ", 1)[1]:
-        return f"Time complexity: O(n^2) in the worst case because nested loops or repeated checks increase the work as the input grows. Space complexity: O(1) unless extra data structures are created."
+        return f"Time complexity: O(n^2) in the worst case because nested loops or repeated checks increase the work as the input grows. Space complexity: O(1) for this {subject} unless extra data structures are created."
     if "for " in lowered:
-        return f"Time complexity: O(n) because the code processes each input item once. Space complexity: O(1) for the simple loop variables used in this {language} function."
-    return f"Time complexity: O(1) for the current straightforward logic. Space complexity: O(1) because the function stores only a few local values."
+        return f"Time complexity: O(n) because the code processes each input item once. Space complexity: O(1) for the simple loop variables used in this {language} {subject}."
+    return f"Time complexity: O(1) for the current straightforward logic. Space complexity: O(1) because this {subject} stores only a few local values."
 
 
 @app.post("/api/complexity-analysis", response_model=ComplexityAnalysisResponse)
