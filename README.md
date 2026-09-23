@@ -106,7 +106,7 @@ AUTH_SECRET=long-random-secret-at-least-32-characters
 FRONTEND_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
 ENABLE_CODE_EXECUTION=false
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 - `DATABASE_URL` selects PostgreSQL. Without it, local development falls back to SQLite at `backend/app.db`.
@@ -150,7 +150,7 @@ DATABASE_URL=<Aiven PostgreSQL connection string>
 AUTH_SECRET=<long random secret>
 FRONTEND_ORIGINS=https://your-project.vercel.app
 GEMINI_API_KEY=<your Gemini key>
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 ENABLE_CODE_EXECUTION=false
 ```
 

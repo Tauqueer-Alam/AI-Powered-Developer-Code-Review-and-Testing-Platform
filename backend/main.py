@@ -753,7 +753,7 @@ def run_code(request: RunRequest):
 @app.post("/api/review", response_model=ReviewResponse)
 async def review_code(request: ReviewRequest):
     api_key = os.getenv("GEMINI_API_KEY")
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
     if not api_key:
         logger.warning("Gemini review unavailable: GEMINI_API_KEY is not configured")
