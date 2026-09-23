@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 
 # Load the .env file from the project root.
 project_root = Path(__file__).resolve().parent.parent
@@ -62,6 +62,11 @@ def init_db():
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """))
+
+    user_columns = {column["name"] for column in inspect(database_engine).get_columns("users")}
+    if "password_salt" not in user_columns:
+        with database_engine.begin() as connection:
+            connection.execute(text("ALTER TABLE users ADD COLUMN password_salt TEXT"))
 
 
 def hash_password(password: str, salt: str | None = None):
@@ -349,7 +354,7 @@ def login_user(request: LoginRequest):
     if not user_row:
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-    if not verify_password(request.password, user_row["password_salt"], user_row["password_hash"]):
+    if not user_row["password_salt"] or not verify_password(request.password, user_row["password_salt"], user_row["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     token = create_token(user_row["id"])
