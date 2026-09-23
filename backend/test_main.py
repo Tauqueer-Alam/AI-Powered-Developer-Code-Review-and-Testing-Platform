@@ -98,6 +98,22 @@ def test_explain_code_endpoint():
     assert "what" in payload["explanation"].lower()
 
 
+def test_explain_script_without_function():
+    response = client.post(
+        "/api/explain-code",
+        json={
+            "code": "a = 5\nb = 3\nprint(a, b)\na, b = b, a\nprint(b, a)",
+            "level": "beginner",
+            "language": "python",
+        },
+    )
+
+    assert response.status_code == 200
+    explanation = response.json()["explanation"]
+    assert "does not define a function" in explanation.lower()
+    assert "swap" in explanation.lower()
+
+
 def test_generate_factorial_tests():
     response = client.post(
         "/api/generate-tests",

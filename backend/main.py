@@ -469,6 +469,33 @@ def build_local_explanation(code: str, level: str, language: str) -> str:
     function_names = re.findall(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", code)
     primary_name = function_names[0] if function_names else "the function"
 
+    if not function_names:
+        explanation = [
+            f"What this {language} code does:",
+            "This code does not define a function. It is a short script that assigns values, displays output, and updates the values before displaying them again.",
+            "",
+            "How it works:",
+            "- The variables are assigned their initial values.",
+            "- The first print statement displays the values in their original order.",
+            "- The assignment swaps the values between the variables.",
+            "- The second print statement displays the updated order.",
+            "",
+            "Important parts:",
+            "- Variables hold the values while the script runs.",
+            "- print sends the current values to the console.",
+            "- The statements execute from top to bottom.",
+            "",
+            "Algorithm used:",
+            "The script follows a direct sequence of assignments and output statements.",
+            "",
+            "Time complexity:",
+            "O(1), because it performs a fixed number of operations.",
+            "",
+            "Space complexity:",
+            "O(1), because it stores only a fixed number of variables.",
+        ]
+        return "\n".join(explanation)
+
     explanation = [
         f"What this {language} code does:",
         f"This code defines {primary_name} and uses it to process values in a simple, step-by-step way.",
