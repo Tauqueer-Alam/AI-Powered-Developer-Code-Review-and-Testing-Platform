@@ -227,11 +227,44 @@ function calculateHealthScore(reviews, tests) {
   return Math.min(100, Math.max(0, Math.round((reviews * 12 + tests * 5) / 2)));
 }
 
+function syncActivityChart(reviews) {
+  const groups = document.querySelectorAll('.bar-group');
+  if (!groups.length) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const counts = Array.from({ length: groups.length }, () => 0);
+
+  reviews.forEach((review) => {
+    const createdAt = new Date(review.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return;
+    createdAt.setHours(0, 0, 0, 0);
+    const daysAgo = Math.round((today - createdAt) / 86400000);
+    if (daysAgo >= 0 && daysAgo < groups.length) counts[groups.length - 1 - daysAgo] += 1;
+  });
+
+  const maximum = Math.max(...counts, 1);
+  groups.forEach((group, index) => {
+    const bar = group.querySelector('.bar');
+    const label = group.querySelector('small');
+    const date = new Date(today);
+    date.setDate(today.getDate() - (groups.length - 1 - index));
+    const height = counts[index] ? Math.max(12, Math.round((counts[index] / maximum) * 92)) : 0;
+
+    bar.dataset.baseHeight = String(height);
+    bar.dataset.empty = height === 0 ? 'true' : 'false';
+    bar.style.height = `${height}%`;
+    label.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  });
+}
+
 function syncDashboardMetrics() {
   const projects = getVisibleProjects();
   const reviews = getVisibleReviews();
   const tests = getVisibleTests();
   const bugs = getVisibleBugs();
+
+  syncActivityChart(reviews);
 
   if (projectsNavCount) projectsNavCount.textContent = projects.length;
   if (projectsTotal) projectsTotal.textContent = projects.length;
