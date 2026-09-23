@@ -64,9 +64,15 @@ def init_db():
         """))
 
     user_columns = {column["name"] for column in inspect(database_engine).get_columns("users")}
+    missing_columns = []
     if "password_salt" not in user_columns:
+        missing_columns.append("password_salt TEXT")
+    if "created_at" not in user_columns:
+        missing_columns.append("created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
+
+    for column_definition in missing_columns:
         with database_engine.begin() as connection:
-            connection.execute(text("ALTER TABLE users ADD COLUMN password_salt TEXT"))
+            connection.execute(text(f"ALTER TABLE users ADD COLUMN {column_definition}"))
 
 
 def hash_password(password: str, salt: str | None = None):
