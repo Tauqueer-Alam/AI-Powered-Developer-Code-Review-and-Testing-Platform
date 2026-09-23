@@ -479,15 +479,18 @@ def build_local_explanation(code: str, level: str, language: str) -> str:
     primary_name = function_names[0] if function_names else "the function"
 
     if not function_names:
+        has_swap = bool(re.search(r"\b([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*\2\s*,\s*\1\b", code))
+        print_count = len(re.findall(r"\bprint\s*\(", code))
+        output_steps = f"- The script uses {print_count} print statement{'' if print_count == 1 else 's'} to display its current values."
+        transformation_step = "- The tuple assignment swaps the values between the variables." if has_swap else "- No value swap or other transformation is present; the assigned values remain unchanged."
         explanation = [
             f"What this {language} code does:",
-            "This code does not define a function. It is a short script that assigns values, displays output, and updates the values before displaying them again.",
+            "This code does not define a function. It is a short script that assigns values and displays output.",
             "",
             "How it works:",
             "- The variables are assigned their initial values.",
-            "- The first print statement displays the values in their original order.",
-            "- The assignment swaps the values between the variables.",
-            "- The second print statement displays the updated order.",
+            output_steps,
+            transformation_step,
             "",
             "Important parts:",
             "- Variables hold the values while the script runs.",

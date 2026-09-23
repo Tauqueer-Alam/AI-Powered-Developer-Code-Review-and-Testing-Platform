@@ -50,7 +50,7 @@ def test_review_script_without_function_is_accurate():
     response = client.post(
         "/api/review",
         json={
-            "code": "a = 5\nb = 3\nprint(a, b)\na, b = b, a\nprint(b, a)",
+            "code": "a = 5\nb = 3\nprint(a, b)",
             "language": "python",
             "instructions": "Explain the important problems like I am a beginner.",
         },
@@ -129,7 +129,7 @@ def test_explain_script_without_function():
     response = client.post(
         "/api/explain-code",
         json={
-            "code": "a = 5\nb = 3\nprint(a, b)\na, b = b, a\nprint(b, a)",
+            "code": "a = 5\nb = 3\nprint(a, b)",
             "level": "beginner",
             "language": "python",
         },
@@ -138,7 +138,22 @@ def test_explain_script_without_function():
     assert response.status_code == 200
     explanation = response.json()["explanation"]
     assert "does not define a function" in explanation.lower()
-    assert "swap" in explanation.lower()
+    assert "1 print statement" in explanation.lower()
+    assert "no value swap" in explanation.lower()
+
+
+def test_explain_script_describes_swap_when_present():
+    response = client.post(
+        "/api/explain-code",
+        json={
+            "code": "a = 5\nb = 3\na, b = b, a\nprint(a, b)",
+            "level": "beginner",
+            "language": "python",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "swaps the values" in response.json()["explanation"].lower()
 
 
 def test_generate_factorial_tests():
