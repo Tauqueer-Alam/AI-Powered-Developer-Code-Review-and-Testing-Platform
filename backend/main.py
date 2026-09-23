@@ -150,12 +150,17 @@ def build_local_review(code: str, language: str, instructions: str) -> str:
         if function_names:
             summary = f"This {language} code defines a function named {function_names[0]} and tries to solve a small problem in a clear way."
         elif language.lower() == "python":
-            summary = "This Python script assigns values, prints them, and swaps the values in a short sequence of statements."
+            has_swap = bool(re.search(r"\b([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*\2\s*,\s*\1\b", code))
+            print_count = len(re.findall(r"\bprint\s*\(", code))
+            operation_description = "assigns values and swaps them" if has_swap else "assigns values and uses them"
+            summary = f"This Python script assigns values, {operation_description}, and uses {print_count} print statement{'' if print_count == 1 else 's'} in a short sequence of statements."
             bugs = ["I did not find a syntax problem or an obvious logic error in this short script."]
-            quality = "The script is easy to follow because each statement runs from top to bottom, although a comment could clarify why the values are swapped."
+            quality = "The script is easy to follow because each statement runs from top to bottom."
+            if has_swap:
+                quality += " A comment could clarify why the values are swapped."
             complexity = "Time complexity is O(1) and space complexity is O(1) because the script performs a fixed number of operations and stores only two values."
             improvements = [
-                "Add a short comment explaining the purpose of the value swap.",
+                "Add a short comment explaining the purpose of the assignments.",
                 "Use descriptive variable names if the script becomes part of a larger project.",
             ]
 

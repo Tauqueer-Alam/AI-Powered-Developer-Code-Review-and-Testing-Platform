@@ -58,9 +58,26 @@ def test_review_script_without_function_is_accurate():
 
     assert response.status_code == 200
     review = response.json()["review"]
-    assert "swaps" in review.lower()
+    assert "swaps" not in review.lower()
+    assert "1 print statement" in review.lower()
     assert "o(1)" in review.lower()
     assert "empty list" not in review.lower()
+
+
+def test_review_script_without_swap_does_not_claim_swap():
+    response = client.post(
+        "/api/review",
+        json={
+            "code": "a = 5\nb = 3\nprint(a + b)",
+            "language": "python",
+            "instructions": "Explain the important problems like I am a beginner.",
+        },
+    )
+
+    assert response.status_code == 200
+    review = response.json()["review"].lower()
+    assert "swaps" not in review
+    assert "1 print statement" in review
 
 
 def test_auth_register_and_login():
