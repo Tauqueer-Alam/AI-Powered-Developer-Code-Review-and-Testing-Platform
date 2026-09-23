@@ -280,7 +280,12 @@ function syncDashboardMetrics() {
     healthScore.innerHTML = `${score}<span>/100</span>`;
   }
   if (healthRing) {
-    healthRing.style.background = `conic-gradient(var(--coral) 0 ${quality}%, var(--yellow) ${quality}% ${Math.min(100, quality + 24)}%, #b8d8d0 ${Math.min(100, quality + 24)}% ${Math.min(100, quality + 24 + 16)}%, #edf2ef ${Math.min(100, quality + 24 + 16)}% 100%)`;
+    const categoryTotal = quality + security + testing;
+    const categoryScale = categoryTotal > 100 ? 100 / categoryTotal : 1;
+    const qualityEnd = quality * categoryScale;
+    const securityEnd = qualityEnd + security * categoryScale;
+    const testingEnd = securityEnd + testing * categoryScale;
+    healthRing.style.background = `conic-gradient(var(--coral) 0 ${qualityEnd}%, var(--blue) ${qualityEnd}% ${securityEnd}%, var(--yellow) ${securityEnd}% ${testingEnd}%, #edf2ef ${testingEnd}% 100%)`;
   }
   if (healthQuality) healthQuality.textContent = `${quality}%`;
   if (healthSecurity) healthSecurity.textContent = `${security}%`;
