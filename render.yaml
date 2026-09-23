@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: codelens-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: ENABLE_CODE_EXECUTION
+        value: "false"
+
+  - type: static
+    name: codelens-frontend
+    buildCommand: echo "Static frontend ready"
+    staticPublishPath: .
