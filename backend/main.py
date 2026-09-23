@@ -3,6 +3,7 @@ import base64
 import binascii
 import hashlib
 import hmac
+import logging
 import os
 import re
 import secrets
@@ -18,6 +19,8 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, inspect, text
+
+logger = logging.getLogger("codelens")
 
 # Load the .env file from the project root.
 project_root = Path(__file__).resolve().parent.parent
@@ -753,6 +756,7 @@ async def review_code(request: ReviewRequest):
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     if not api_key:
+        logger.warning("Gemini review unavailable: GEMINI_API_KEY is not configured")
         return ReviewResponse(
             review=build_local_review(request.code, request.language, request.instructions),
             model="local-review-fallback",
@@ -782,13 +786,19 @@ If there are no problems in a section, say so. Use plain text and do not use mar
         async with httpx.AsyncClient(timeout=45) as client:
             response = await client.post(url, params={"key": api_key}, json=payload)
             response.raise_for_status()
-    except (httpx.HTTPStatusError, httpx.RequestError):
+    except httpx.HTTPStatusError as error:
+        logger.warning("Gemini review request rejected with status %s: %s", error.response.status_code, error.response.text[:500])
+        fallback_review = build_local_review(request.code, request.language, request.instructions)
+        return ReviewResponse(review=fallback_review, model="local-review-fallback")
+    except httpx.RequestError as error:
+        logger.warning("Gemini review request failed: %s", error)
         fallback_review = build_local_review(request.code, request.language, request.instructions)
         return ReviewResponse(review=fallback_review, model="local-review-fallback")
 
     data = response.json()
     candidates = data.get("candidates", [])
     if not candidates:
+        logger.warning("Gemini review returned no candidates: %s", data.get("promptFeedback", data) )
         return ReviewResponse(
             review=build_local_review(request.code, request.language, request.instructions),
             model="local-review-fallback",
@@ -796,6 +806,7 @@ If there are no problems in a section, say so. Use plain text and do not use mar
 
     review_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
     if not review_text:
+        logger.warning("Gemini review returned an empty response")
         return ReviewResponse(
             review=build_local_review(request.code, request.language, request.instructions),
             model="local-review-fallback",
