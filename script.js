@@ -222,6 +222,11 @@ function syncProjectCount() {
   }
 }
 
+function calculateHealthScore(reviews, tests) {
+  if (!reviews && !tests) return 0;
+  return Math.min(100, Math.max(0, Math.round((reviews * 12 + tests * 5) / 2)));
+}
+
 function syncDashboardMetrics() {
   const projects = getVisibleProjects();
   const reviews = getVisibleReviews();
@@ -233,7 +238,7 @@ function syncDashboardMetrics() {
   if (reviewsTotal) reviewsTotal.textContent = reviews.length;
   if (bugsTotal) bugsTotal.textContent = bugs;
   if (testsTotal) testsTotal.textContent = tests;
-  const score = Math.min(100, Math.max(0, Math.round(((reviews.length || 0) * 12 + (projects.length || 0) * 8 + (tests || 0) * 5) / 2)));
+  const score = calculateHealthScore(reviews.length, tests);
   const quality = Math.min(100, score + Math.min(12, reviews.length * 3));
   const security = Math.min(100, Math.max(0, score - Math.min(10, bugs)));
   const testing = Math.min(100, score + Math.min(18, tests * 6));
@@ -362,7 +367,7 @@ function applyGuestMetrics() {
   renderReviews();
   syncDashboardMetrics();
   if (healthScore) {
-    const guestScore = Math.min(100, Math.max(0, Math.round(((getVisibleReviews().length || 0) * 12 + (getVisibleProjects().length || 0) * 8 + getVisibleTests() * 5) / 2)));
+    const guestScore = calculateHealthScore(getVisibleReviews().length, getVisibleTests());
     healthScore.innerHTML = `${guestScore}<span>/100</span>`;
   }
 }
