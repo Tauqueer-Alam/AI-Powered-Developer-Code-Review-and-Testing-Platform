@@ -126,6 +126,8 @@ h2 { margin: 0; font-size: clamp(25px, 3vw, 34px); letter-spacing: -1.6px; line-
 .editor-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 13px; color: var(--muted); font-size: 9px; }
 .editor-footer .secondary-button:disabled { cursor: wait; opacity: .65; }
 .result-panel pre { min-height: 370px; max-height: 420px; overflow: auto; margin: 20px 0 0; padding: 17px; border-radius: 8px; color: #526360; background: #f3f7f5; font: 11px/1.7 'DM Mono', monospace; white-space: pre-wrap; }
-.editor-actions { display: flex; gap: 8px; }.run-button { padding: 11px 15px; border: 1px solid #d9e3df; border-radius: 7px; color: var(--ink); background: white; font-size: 11px; font-weight: 800; }.run-button:hover { border-color: var(--green); color: #317453; }.run-button:disabled { cursor: wait; opacity: .65; }
+.editor-actions { display: flex; flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 8px; min-width: 0; }.editor-actions > button { flex: 0 1 auto; white-space: normal; }.run-button { padding: 11px 15px; border: 1px solid #d9e3df; border-radius: 7px; color: var(--ink); background: white; font-size: 11px; font-weight: 800; }.run-button:hover { border-color: var(--green); color: #317453; }.run-button:disabled { cursor: wait; opacity: .65; }
 
 @media (max-width: 1050px) { .review-workspace { grid-template-columns: 1fr; } }
+@media (max-width: 1050px) { .editor-footer { align-items: stretch; flex-direction: column; }.editor-actions { justify-content: flex-start; } }
+@media (max-width: 600px) { .editor-actions > button { flex: 1 1 calc(50% - 8px); min-width: 0; }.editor-footer > span { line-height: 1.4; }.editor-panel textarea { height: 300px; } }
