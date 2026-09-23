@@ -54,12 +54,6 @@ const STORAGE_KEYS = {
   userProjectCode: 'codelens-project-code'
 };
 
-const DEFAULT_PROJECTS = [
-  { name: 'DSA Practice', description: 'Algorithms and data structures in Python.', updated: 'Updated today', accent: 'coral-bg', icon: '⌘' },
-  { name: 'E-commerce API', description: 'REST API for a small online store.', updated: 'Updated Sep 17', accent: 'blue-bg', icon: '⌁' },
-  { name: 'Portfolio site', description: 'Personal website and experiments.', updated: 'Updated Sep 12', accent: 'yellow-bg', icon: '✦' }
-];
-
 function getStoredList(storageKey) {
   const storedValue = localStorage.getItem(storageKey);
   if (!storedValue) return [];
@@ -144,8 +138,7 @@ function getVisibleBugs() {
 
 function getProjects() {
   const storageKey = hasActiveSession() ? getUserStorageKey(STORAGE_KEYS.userProjects) : STORAGE_KEYS.guestProjects;
-  const projects = getStoredList(storageKey);
-  return localStorage.getItem(storageKey) === null ? DEFAULT_PROJECTS.map((project) => ({ ...project })) : projects;
+  return getStoredList(storageKey);
 }
 
 function saveProjects(projects) {
@@ -330,6 +323,8 @@ function syncDashboardMetrics() {
   if (healthTesting) healthTesting.textContent = `${testing}%`;
   if (healthLabel) healthLabel.textContent = score >= 75 ? 'Excellent' : score >= 50 ? 'Good' : score >= 25 ? 'Building' : 'Getting started';
   if (healthMessage) healthMessage.textContent = score >= 50 ? 'Keep it up' : 'Keep building your workspace';
+  const overviewCopy = document.querySelector('#overview-copy');
+  if (overviewCopy) overviewCopy.textContent = reviews.length || tests ? 'Your workspace activity is up to date.' : 'Your workspace is ready for its first review.';
 }
 
 function openProject(projectName) {
@@ -431,6 +426,15 @@ function updateWelcomeHeading(user) {
   wave.className = 'wave';
   wave.textContent = '✦';
   welcomeHeading.appendChild(wave);
+  const currentDate = document.querySelector('#current-date');
+  if (currentDate) {
+    currentDate.textContent = new Date().toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
 }
 
 function applyGuestMetrics() {

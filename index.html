@@ -63,9 +63,9 @@
       <section class="page-view active-view" id="overview-view">
         <div class="page-heading">
           <div>
-            <p class="eyebrow">Saturday, September 20, 2026</p>
+            <p class="eyebrow" id="current-date"></p>
             <h2 id="welcome-heading">Good morning, Guest user <span class="wave">✦</span></h2>
-            <p class="heading-copy">Your codebase is looking healthy. Keep the momentum going.</p>
+            <p class="heading-copy" id="overview-copy">Your workspace is ready for its first review.</p>
           </div>
           <button class="secondary-button" id="quick-review-button"><span>＋</span> Start a review</button>
         </div>
@@ -74,22 +74,22 @@
           <article class="stat-card coral-card">
             <div class="stat-top"><span>Projects</span><span class="stat-icon">▣</span></div>
             <strong id="projects-total">0</strong>
-            <p><span class="trend up">↗ 0%</span> vs last month</p>
+            <p>Workspace projects</p>
           </article>
           <article class="stat-card blue-card">
             <div class="stat-top"><span>Code reviews</span><span class="stat-icon">◌</span></div>
             <strong id="reviews-total">0</strong>
-            <p><span class="trend up">↗ 0%</span> vs last month</p>
+            <p>Completed analyses</p>
           </article>
           <article class="stat-card yellow-card">
             <div class="stat-top"><span>Bugs detected</span><span class="stat-icon">!</span></div>
             <strong id="bugs-total">0</strong>
-            <p><span class="trend down">↘ 0%</span> vs last month</p>
+            <p>Findings from analyses</p>
           </article>
           <article class="stat-card green-card">
             <div class="stat-top"><span>Tests passed</span><span class="stat-icon">✓</span></div>
             <strong id="tests-total">0</strong>
-            <p><span class="trend up">↗ 0%</span> vs last month</p>
+            <p>Generated test runs</p>
           </article>
         </div>
 
@@ -111,13 +111,13 @@
               <div class="bar-chart" aria-label="Review activity chart">
                 <div class="chart-line line-one"></div><div class="chart-line line-two"></div><div class="chart-line line-three"></div><div class="chart-line line-four"></div>
                 <div class="bars">
-                  <div class="bar-group"><span class="bar" style="height: 35%"></span><small>Aug 24</small></div>
-                  <div class="bar-group"><span class="bar" style="height: 48%"></span><small>Aug 28</small></div>
-                  <div class="bar-group"><span class="bar" style="height: 42%"></span><small>Sep 01</small></div>
-                  <div class="bar-group"><span class="bar" style="height: 67%"></span><small>Sep 05</small></div>
-                  <div class="bar-group"><span class="bar" style="height: 58%"></span><small>Sep 09</small></div>
-                  <div class="bar-group"><span class="bar" style="height: 78%"></span><small>Sep 13</small></div>
-                  <div class="bar-group"><span class="bar highlighted" style="height: 92%"></span><small>Sep 17</small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar" data-empty="true"></span><small></small></div>
+                  <div class="bar-group"><span class="bar highlighted" data-empty="true"></span><small></small></div>
                 </div>
               </div>
             </div>
@@ -160,12 +160,7 @@
               <div><h3>Code to review</h3><p>Start with Python. More languages can be added later.</p></div>
               <span class="language-badge">Python</span>
             </div>
-            <textarea id="code-input" spellcheck="false">def find_max(numbers):
-    max_value = 0
-    for number in numbers:
-        if number > max_value:
-            max_value = number
-    return max_value</textarea>
+            <textarea id="code-input" spellcheck="false" placeholder="Paste or write Python code here..."></textarea>
             <div class="editor-footer"><div class="editor-actions"><button class="run-button" id="run-code-button"><span>▶</span> Run</button><button class="secondary-button" id="run-review-button"><span>✦</span> Review with AI</button><button class="run-button" id="generate-tests-button"><span>✦</span> Generate tests</button><button class="run-button" id="explain-code-button"><span>?</span> Explain code</button><button class="secondary-button" id="bug-check-button"><span>!</span> Bug check</button><button class="secondary-button" id="complexity-button"><span>↺</span> Complexity</button><button class="secondary-button" id="optimize-button"><span>⚙</span> Optimize</button><button class="secondary-button" id="quality-score-button"><span>✓</span> Quality score</button></div></div>
           </section>
           <section class="panel result-panel">
@@ -177,12 +172,7 @@
 
       <section class="page-view" id="projects-view">
         <div class="page-heading"><div><p class="eyebrow">Your workspace</p><h2>Projects</h2><p class="heading-copy">Open a project to write, run, and review code.</p></div><button class="secondary-button" id="projects-new-button"><span>＋</span> New project</button></div>
-        <div class="projects-grid">
-          <article class="project-card featured-project" data-project="DSA Practice"><div class="project-color coral-bg">⌘</div><div class="project-card-body"><div class="project-card-title"><h3>DSA Practice</h3><span>•••</span></div><p>Algorithms and data structures in Python.</p><div class="project-meta"><span>Updated today</span></div><button class="open-project-button">Open project <span>→</span></button></div></article>
-          <article class="project-card" data-project="E-commerce API"><div class="project-color blue-bg">⌁</div><div class="project-card-body"><div class="project-card-title"><h3>E-commerce API</h3><span>•••</span></div><p>REST API for a small online store.</p><div class="project-meta"><span>Updated Sep 17</span></div><button class="open-project-button">Open project <span>→</span></button></div></article>
-          <article class="project-card" data-project="Portfolio site"><div class="project-color yellow-bg">✦</div><div class="project-card-body"><div class="project-card-title"><h3>Portfolio site</h3><span>•••</span></div><p>Personal website and experiments.</p><div class="project-meta"><span>Updated Sep 12</span></div><button class="open-project-button">Open project <span>→</span></button></div></article>
-          <button class="empty-project-card" id="empty-project-button"><span>＋</span><strong>Create a project</strong><small>Start with a clean workspace</small></button>
-        </div>
+        <div class="projects-grid"></div>
       </section>
 
       <section class="page-view" id="reviews-view">
