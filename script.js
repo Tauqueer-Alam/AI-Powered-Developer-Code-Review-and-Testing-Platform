@@ -34,9 +34,12 @@ const healthQuality = document.querySelector('#health-quality');
 const healthSecurity = document.querySelector('#health-security');
 const healthTesting = document.querySelector('#health-testing');
 const reviewFilter = document.querySelector('#review-filter');
+const codeInput = document.querySelector('#code-input');
 const API_BASE_URL = window.CODELENS_API_URL || 'http://localhost:8000';
 
 let authMode = 'login';
+let activeProjectName = 'Current workspace';
+const defaultCode = codeInput?.value || '';
 
 const STORAGE_KEYS = {
   guestProjects: 'codelens-guest-projects',
@@ -46,7 +49,9 @@ const STORAGE_KEYS = {
   userProjects: 'codelens-projects',
   userReviews: 'codelens-reviews',
   userTests: 'codelens-tests',
-  userBugs: 'codelens-bugs'
+  userBugs: 'codelens-bugs',
+  guestProjectCode: 'codelens-project-code',
+  userProjectCode: 'codelens-project-code'
 };
 
 const DEFAULT_PROJECTS = [
@@ -70,6 +75,39 @@ function getStoredList(storageKey) {
 
 function saveStoredList(storageKey, items) {
   localStorage.setItem(storageKey, JSON.stringify(items));
+}
+
+function getProjectCodeStorageKey() {
+  return hasActiveSession() ? getUserStorageKey(STORAGE_KEYS.userProjectCode) : STORAGE_KEYS.guestProjectCode;
+}
+
+function getProjectCodeMap() {
+  const storageKey = getProjectCodeStorageKey();
+  const storedValue = localStorage.getItem(storageKey);
+  if (!storedValue) return {};
+
+  try {
+    const parsedValue = JSON.parse(storedValue);
+    return parsedValue && typeof parsedValue === 'object' && !Array.isArray(parsedValue) ? parsedValue : {};
+  } catch (error) {
+    localStorage.removeItem(storageKey);
+    return {};
+  }
+}
+
+function loadProjectCode(projectName) {
+  activeProjectName = projectName || 'Current workspace';
+  const projectCode = getProjectCodeMap()[activeProjectName];
+  codeInput.value = projectCode === undefined
+    ? activeProjectName === 'Current workspace' ? defaultCode : ''
+    : projectCode;
+}
+
+function saveActiveProjectCode() {
+  if (!codeInput) return;
+  const projectCodeMap = getProjectCodeMap();
+  projectCodeMap[activeProjectName] = codeInput.value;
+  localStorage.setItem(getProjectCodeStorageKey(), JSON.stringify(projectCodeMap));
 }
 
 function resetGuestState() {
@@ -296,6 +334,7 @@ function syncDashboardMetrics() {
 
 function openProject(projectName) {
   if (!projectName) return;
+  loadProjectCode(projectName);
   showToast(`${projectName} opened`);
   showView('review');
 }
@@ -580,6 +619,7 @@ function setAuthState(user) {
     renderProjects();
     renderReviews();
     syncDashboardMetrics();
+    loadProjectCode(activeProjectName);
   } else {
     if (localStorage.getItem('codelens-user') && !token) {
       localStorage.removeItem('codelens-user');
@@ -592,6 +632,7 @@ function setAuthState(user) {
     logoutButton.classList.add('hidden');
     updateWelcomeHeading(null);
     applyGuestMetrics();
+    loadProjectCode(activeProjectName);
   }
 }
 
@@ -718,9 +759,11 @@ projectsGrid?.addEventListener('click', (event) => {
   openProject(project);
 });
 
+loadProjectCode(activeProjectName);
 renderProjects();
 syncDashboardMetrics();
 renderReviews();
+codeInput?.addEventListener('input', saveActiveProjectCode);
 
 // Change the sample chart slightly when the time period changes.
 document.querySelector('#activity-period').addEventListener('change', (event) => {
@@ -758,7 +801,7 @@ document.querySelector('#run-review-button').addEventListener('click', async () 
     const inferredBugs = Math.max(1, (data.review.match(/- /g) || []).length);
     reviews.unshift({
       fileName: 'review.py',
-      projectName: 'Current workspace',
+      projectName: activeProjectName,
       createdAt: new Date().toLocaleString(),
       model: data.model,
       bugs: inferredBugs
