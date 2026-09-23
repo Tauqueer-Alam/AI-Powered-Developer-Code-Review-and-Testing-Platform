@@ -55,9 +55,9 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_PROJECTS = [
-  { name: 'DSA Practice', description: 'Algorithms and data structures in Python.', files: '7 files', updated: 'Updated today', accent: 'coral-bg', icon: '⌘' },
-  { name: 'E-commerce API', description: 'REST API for a small online store.', files: '12 files', updated: 'Updated Sep 17', accent: 'blue-bg', icon: '⌁' },
-  { name: 'Portfolio site', description: 'Personal website and experiments.', files: '4 files', updated: 'Updated Sep 12', accent: 'yellow-bg', icon: '✦' }
+  { name: 'DSA Practice', description: 'Algorithms and data structures in Python.', updated: 'Updated today', accent: 'coral-bg', icon: '⌘' },
+  { name: 'E-commerce API', description: 'REST API for a small online store.', updated: 'Updated Sep 17', accent: 'blue-bg', icon: '⌁' },
+  { name: 'Portfolio site', description: 'Personal website and experiments.', updated: 'Updated Sep 12', accent: 'yellow-bg', icon: '✦' }
 ];
 
 function getStoredList(storageKey) {
@@ -366,18 +366,14 @@ function renderProjects() {
           <button class="delete-project-button" type="button" title="Delete project" aria-label="Delete ${project.name}">•••</button>
         </div>
         <p>${project.description}</p>
-        <div class="project-meta">
-          <span>${project.files}</span>
-          <span>${project.updated}</span>
-        </div>
+        <div class="project-meta"><span>${project.updated}</span></div>
         <button class="open-project-button" type="button">Open project <span>→</span></button>
       </div>
     `;
     card.querySelector('.project-color').textContent = project.icon || project.name.charAt(0).toUpperCase();
     card.querySelector('h3').textContent = project.name;
     card.querySelector('.project-card-body > p').textContent = project.description;
-    card.querySelector('.project-meta span:first-child').textContent = project.files;
-    card.querySelector('.project-meta span:last-child').textContent = project.updated;
+    card.querySelector('.project-meta span').textContent = project.updated;
 
     const openButton = card.querySelector('.open-project-button');
     openButton?.addEventListener('click', (event) => {
@@ -412,7 +408,6 @@ function createProjectCard(projectName) {
   const project = {
     name: projectName,
     description: `Workspace for ${projectName.toLowerCase()}.`,
-    files: '1 file',
     updated: 'Updated just now',
     accent: ['coral-bg', 'blue-bg', 'yellow-bg'][Math.floor(Math.random() * 3)],
     icon: projectName.split(' ').slice(0, 2).map((part) => part[0].toUpperCase()).join('').slice(0, 2) || 'PR'
