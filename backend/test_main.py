@@ -46,6 +46,23 @@ def test_review_falls_back_when_ai_missing():
     assert "Bugs and risks" in payload["review"]
 
 
+def test_review_script_without_function_is_accurate():
+    response = client.post(
+        "/api/review",
+        json={
+            "code": "a = 5\nb = 3\nprint(a, b)\na, b = b, a\nprint(b, a)",
+            "language": "python",
+            "instructions": "Explain the important problems like I am a beginner.",
+        },
+    )
+
+    assert response.status_code == 200
+    review = response.json()["review"]
+    assert "swaps" in review.lower()
+    assert "o(1)" in review.lower()
+    assert "empty list" not in review.lower()
+
+
 def test_auth_register_and_login():
     email = "demo@example.com"
     password = "Secret123!"

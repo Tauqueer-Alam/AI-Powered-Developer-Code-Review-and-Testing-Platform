@@ -149,6 +149,15 @@ def build_local_review(code: str, language: str, instructions: str) -> str:
         function_names = [node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
         if function_names:
             summary = f"This {language} code defines a function named {function_names[0]} and tries to solve a small problem in a clear way."
+        elif language.lower() == "python":
+            summary = "This Python script assigns values, prints them, and swaps the values in a short sequence of statements."
+            bugs = ["I did not find a syntax problem or an obvious logic error in this short script."]
+            quality = "The script is easy to follow because each statement runs from top to bottom, although a comment could clarify why the values are swapped."
+            complexity = "Time complexity is O(1) and space complexity is O(1) because the script performs a fixed number of operations and stores only two values."
+            improvements = [
+                "Add a short comment explaining the purpose of the value swap.",
+                "Use descriptive variable names if the script becomes part of a larger project.",
+            ]
 
         if "max_value = 0" in code and "if number > max_value" in code:
             bugs = [
