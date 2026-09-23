@@ -150,19 +150,33 @@ def build_local_review(code: str, language: str, instructions: str) -> str:
         if function_names:
             summary = f"This {language} code defines a function named {function_names[0]} and tries to solve a small problem in a clear way."
         elif language.lower() == "python":
-            has_swap = bool(re.search(r"\b([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*\2\s*,\s*\1\b", code))
+            normalized_code = re.sub(r"\s+", " ", code)
+            has_simple_swap = bool(re.search(r"\b([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*\2\s*,\s*\1\b", code))
+            has_indexed_swap = bool(re.search(r"\b(\w+)\[(\w+)\],\s*\1\[\2\s*\+\s*1\]\s*=\s*\1\[\2\s*\+\s*1\],\s*\1\[\2\]", normalized_code))
+            has_swap = has_simple_swap or has_indexed_swap
             print_count = len(re.findall(r"\bprint\s*\(", code))
-            operation_description = "assigns values and swaps them" if has_swap else "assigns values and uses them"
-            summary = f"This Python script assigns values, {operation_description}, and uses {print_count} print statement{'' if print_count == 1 else 's'} in a short sequence of statements."
+            has_nested_range_loops = bool(re.search(r"for\s+\w+\s+in\s+range\([^\n]+\):[\s\S]*for\s+\w+\s+in\s+range\(", code))
+            is_bubble_sort = has_nested_range_loops and has_swap and "if " in code and "arr[" in code
+            if is_bubble_sort:
+                summary = "This Python script uses bubble sort: it repeatedly compares neighboring list values and swaps them when they are out of order."
+                quality = "The algorithm is readable and the swap condition is easy to follow, but bubble sort becomes slow as the list grows."
+                complexity = "Time complexity is O(n^2) in the average and worst cases because the script uses nested loops. Space complexity is O(1) because it sorts the list in place."
+                improvements = [
+                    "Use Python's built-in sorted function when you need production-ready performance.",
+                    "Stop early when a complete pass makes no swaps, because the list may already be sorted.",
+                ]
+            else:
+                operation_description = "assigns values, swaps them" if has_swap else "assigns values and uses them"
+                summary = f"This Python script {operation_description} and uses {print_count} print statement{'' if print_count == 1 else 's'} in a short sequence of statements."
+                quality = "The script is easy to follow because each statement runs from top to bottom."
+                complexity = "Time complexity is O(1) and space complexity is O(1) because the script performs a fixed number of operations and stores only two values."
+                improvements = [
+                    "Add a short comment explaining the purpose of the assignments.",
+                    "Use descriptive variable names if the script becomes part of a larger project.",
+                ]
             bugs = ["I did not find a syntax problem or an obvious logic error in this short script."]
-            quality = "The script is easy to follow because each statement runs from top to bottom."
-            if has_swap:
+            if has_swap and not is_bubble_sort:
                 quality += " A comment could clarify why the values are swapped."
-            complexity = "Time complexity is O(1) and space complexity is O(1) because the script performs a fixed number of operations and stores only two values."
-            improvements = [
-                "Add a short comment explaining the purpose of the assignments.",
-                "Use descriptive variable names if the script becomes part of a larger project.",
-            ]
 
         if "max_value = 0" in code and "if number > max_value" in code:
             bugs = [

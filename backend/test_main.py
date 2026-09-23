@@ -80,6 +80,22 @@ def test_review_script_without_swap_does_not_claim_swap():
     assert "1 print statement" in review
 
 
+def test_review_bubble_sort_reports_nested_loop_complexity():
+    response = client.post(
+        "/api/review",
+        json={
+            "code": "arr = [5, 3, 8, 4, 2]\nn = len(arr)\nfor i in range(n):\n    for j in range(0, n - i - 1):\n        if arr[j] > arr[j + 1]:\n            arr[j], arr[j + 1] = arr[j + 1], arr[j]\nprint(arr)",
+            "language": "python",
+            "instructions": "Explain the important problems like I am a beginner.",
+        },
+    )
+
+    assert response.status_code == 200
+    review = response.json()["review"].lower()
+    assert "bubble sort" in review
+    assert "o(n^2)" in review
+
+
 def test_auth_register_and_login():
     email = "demo@example.com"
     password = "Secret123!"
