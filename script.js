@@ -27,6 +27,12 @@ const reviewsTotal = document.querySelector('#reviews-total');
 const bugsTotal = document.querySelector('#bugs-total');
 const testsTotal = document.querySelector('#tests-total');
 const healthScore = document.querySelector('#health-score');
+const healthRing = document.querySelector('#health-ring');
+const healthLabel = document.querySelector('#health-label');
+const healthMessage = document.querySelector('#health-message');
+const healthQuality = document.querySelector('#health-quality');
+const healthSecurity = document.querySelector('#health-security');
+const healthTesting = document.querySelector('#health-testing');
 const reviewFilter = document.querySelector('#review-filter');
 const API_BASE_URL = window.CODELENS_API_URL || 'http://localhost:8000';
 
@@ -227,10 +233,22 @@ function syncDashboardMetrics() {
   if (reviewsTotal) reviewsTotal.textContent = reviews.length;
   if (bugsTotal) bugsTotal.textContent = bugs;
   if (testsTotal) testsTotal.textContent = tests;
+  const score = Math.min(100, Math.max(0, Math.round(((reviews.length || 0) * 12 + (projects.length || 0) * 8 + (tests || 0) * 5) / 2)));
+  const quality = Math.min(100, score + Math.min(12, reviews.length * 3));
+  const security = Math.min(100, Math.max(0, score - Math.min(10, bugs)));
+  const testing = Math.min(100, score + Math.min(18, tests * 6));
+
   if (healthScore) {
-    const score = Math.min(100, Math.max(0, Math.round(((reviews.length || 0) * 12 + (projects.length || 0) * 8 + (tests || 0) * 5) / 2)));
     healthScore.innerHTML = `${score}<span>/100</span>`;
   }
+  if (healthRing) {
+    healthRing.style.background = `conic-gradient(var(--coral) 0 ${quality}%, var(--yellow) ${quality}% ${Math.min(100, quality + 24)}%, #b8d8d0 ${Math.min(100, quality + 24)}% ${Math.min(100, quality + 24 + 16)}%, #edf2ef ${Math.min(100, quality + 24 + 16)}% 100%)`;
+  }
+  if (healthQuality) healthQuality.textContent = `${quality}%`;
+  if (healthSecurity) healthSecurity.textContent = `${security}%`;
+  if (healthTesting) healthTesting.textContent = `${testing}%`;
+  if (healthLabel) healthLabel.textContent = score >= 75 ? 'Excellent' : score >= 50 ? 'Good' : score >= 25 ? 'Building' : 'Getting started';
+  if (healthMessage) healthMessage.textContent = score >= 50 ? 'Keep it up' : 'Keep building your workspace';
 }
 
 function openProject(projectName) {
