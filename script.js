@@ -859,37 +859,6 @@ document.querySelector('#quality-score-button')?.addEventListener('click', () =>
   );
 });
 
-// Run Python through the backend and show stdout or errors.
-document.querySelector('#run-code-button').addEventListener('click', async () => {
-  const code = document.querySelector('#code-input').value;
-  const result = document.querySelector('#review-result');
-  const status = document.querySelector('#review-status');
-  const runButton = document.querySelector('#run-code-button');
-
-  runButton.disabled = true;
-  runButton.innerHTML = '<span>...</span> Running';
-  status.textContent = 'Running in the local Python sandbox...';
-  result.textContent = '';
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/run`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.detail || 'The code could not run.');
-    result.textContent = data.error ? `${data.output}\n${data.error}` : data.output || 'Program finished without output.';
-    status.textContent = data.timed_out ? 'Execution timed out.' : `Finished in ${data.execution_time} seconds.`;
-  } catch (error) {
-    result.textContent = `Run unavailable: ${error.message}\n\nMake sure the FastAPI server is running on port 8000.`;
-    status.textContent = 'The execution service returned an error.';
-  } finally {
-    runButton.disabled = false;
-    runButton.innerHTML = '<span>▶</span> Run';
-  }
-});
-
 const storedUser = getStoredUser();
 if (!localStorage.getItem('codelens-token') && storedUser) {
   localStorage.removeItem('codelens-user');
