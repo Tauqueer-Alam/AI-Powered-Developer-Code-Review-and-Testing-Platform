@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 
 import httpx
+import jwt
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -92,28 +93,20 @@ def verify_password(password: str, salt: str, hashed_password: str) -> bool:
 
 def create_token(user_id: int) -> str:
     issued_at = int(time.time())
-    payload = f"{user_id}:{issued_at}:{secrets.token_urlsafe(16)}"
-    encoded_payload = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("utf-8").rstrip("=")
-    signature = hmac.new(AUTH_SECRET.encode("utf-8"), encoded_payload.encode("ascii"), hashlib.sha256).digest()
-    encoded_signature = base64.urlsafe_b64encode(signature).decode("ascii").rstrip("=")
-    return f"{encoded_payload}.{encoded_signature}"
+    payload = {
+        "sub": str(user_id),
+        "iat": issued_at,
+        "exp": issued_at + TOKEN_TTL_SECONDS,
+        "jti": secrets.token_urlsafe(16),
+    }
+    return jwt.encode(payload, AUTH_SECRET, algorithm="HS256")
 
 
 def decode_token(token: str) -> int | None:
     try:
-        encoded_payload, encoded_signature = token.split(".", 1)
-        expected_signature = hmac.new(AUTH_SECRET.encode("utf-8"), encoded_payload.encode("ascii"), hashlib.sha256).digest()
-        supplied_signature = base64.urlsafe_b64decode(encoded_signature + "=" * (-len(encoded_signature) % 4))
-        if not hmac.compare_digest(supplied_signature, expected_signature):
-            return None
-
-        decoded = base64.urlsafe_b64decode(encoded_payload + "=" * (-len(encoded_payload) % 4)).decode("utf-8")
-        user_id_text, issued_at_text, _ = decoded.split(":", 2)
-        if int(time.time()) - int(issued_at_text) > TOKEN_TTL_SECONDS:
-            return None
-        user_id = int(user_id_text)
-        return user_id
-    except (ValueError, TypeError, UnicodeDecodeError, binascii.Error):
+        payload = jwt.decode(token, AUTH_SECRET, algorithms=["HS256"])
+        return int(payload["sub"])
+    except (jwt.InvalidTokenError, KeyError, TypeError, ValueError):
         return None
 
 
@@ -436,8 +429,10 @@ def build_local_test_cases(code: str, language: str) -> str:
         return "No function definition was found. Test generation currently supports callable Python functions; add a `def function_name(...):` block before generating unit tests."
 
     function_name = match.group(1)
+    function_lower = function_name.lower()
+    code_lower = code.lower()
 
-    if "factorial" in function_name.lower() or "factorial" in code.lower():
+    if "factorial" in function_lower or "factorial" in code_lower:
         tests = [
             f"def test_{function_name}_zero_case():",
             "    result = " + function_name + "(0)",
@@ -450,6 +445,28 @@ def build_local_test_cases(code: str, language: str) -> str:
             f"def test_{function_name}_one_case():",
             "    result = " + function_name + "(1)",
             "    assert result == 1",
+        ]
+        return "\n".join(tests)
+
+    if function_lower == "two_sum" or ("target" in code_lower and "seen" in code_lower and "enumerate" in code_lower):
+        tests = [
+            f"def test_{function_name}_finds_valid_pair():",
+            "    nums = [2, 7, 11, 15]",
+            "    target = 9",
+            "    result = " + function_name + "(nums, target)",
+            "    assert result == [0, 1]",
+            "",
+            f"def test_{function_name}_returns_empty_when_no_pair_exists():",
+            "    nums = [1, 2, 3, 4]",
+            "    target = 10",
+            "    result = " + function_name + "(nums, target)",
+            "    assert result == []",
+            "",
+            f"def test_{function_name}_handles_duplicate_values():",
+            "    nums = [3, 3]",
+            "    target = 6",
+            "    result = " + function_name + "(nums, target)",
+            "    assert result == [0, 1]",
         ]
         return "\n".join(tests)
 
