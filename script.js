@@ -762,6 +762,31 @@ loadProjectCode(activeProjectName);
 renderProjects();
 syncDashboardMetrics();
 renderReviews();
+codeInput?.addEventListener('keydown', (event) => {
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    codeInput.setRangeText('    ', codeInput.selectionStart, codeInput.selectionEnd, 'end');
+    codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+
+  if (event.key !== 'Enter') return;
+
+  const cursor = codeInput.selectionStart;
+  const beforeCursor = codeInput.value.slice(0, cursor);
+  const currentLine = beforeCursor.slice(beforeCursor.lastIndexOf('\n') + 1);
+  const leadingWhitespace = currentLine.match(/^\s*/)?.[0] || '';
+  const dedentLine = /^(else|elif|except|finally)\b/.test(currentLine.trim());
+  let indentation = dedentLine ? leadingWhitespace.slice(0, -4) : leadingWhitespace;
+
+  if (!dedentLine && currentLine.trimEnd().endsWith(':')) {
+    indentation += '    ';
+  }
+
+  event.preventDefault();
+  codeInput.setRangeText(`\n${indentation}`, codeInput.selectionStart, codeInput.selectionEnd, 'end');
+  codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+});
 codeInput?.addEventListener('input', saveActiveProjectCode);
 
 // Change the sample chart slightly when the time period changes.
